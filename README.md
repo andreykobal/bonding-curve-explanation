@@ -1,128 +1,124 @@
-# Bonding Curve for Token Sale
+# Bonding Curve vs. Conventional Crypto Pricing
 
-## Abstract
+This document explains, with formulas, the difference between the bonding curve model used in this contract and the typical pricing mechanism used in AMMs (Automated Market Makers) like Uniswap.
 
-This document describes the mathematical model of the bonding curve used for dynamic token pricing during the token sale. The model is designed to reward early investors by offering a lower price at the beginning and gradually increasing the token price as more ETH is contributed. This README outlines the underlying formulas and explains how the model works, along with instructions for viewing the mathematical expressions on GitHub Pages using MathJax.
+---
 
-## Parameters and Constants
+## 1. Bonding Curve Model (Based on Contract Formulas)
 
-The following constants are defined in the smart contract:
+### Token Issuance Function
 
-- **\( T \)** — Total “virtual” number of tokens available for issuance.  
-  **Value:**
-  $$
-  T = 1\,073\,000\,191 \times 10^{18}
-  $$
-
-- **\( k \)** — A positive constant that scales the dependency on the contributed ETH.  
-  **Value:**
-  $$
-  k = 2\,146\,000\,382 \times 10^{18}
-  $$
-
-- **\( x_0 \)** — The virtual initial ETH deposit used for the initial adjustment of the curve.  
-  **Value:**
-  $$
-  x_0 = 2 \times 10^{18} \quad (\text{equivalent to 2 ETH})
-  $$
-
-Additional parameters include:
-- **\(\text{FEE\_BPS} = 100\)** (a 1% fee),
-- **\(\text{BPS\_DENOMINATOR} = 10\,000\)**,
-- **Sale Token Cap:** 800,000,000 tokens available for sale.
-
-## 1. Token Issuance Function
-
-The token issuance is defined by the function:
+In our contract, the total token issuance as a function of the contributed ETH is given by:
 
 $$
 S(x) = T - \frac{k}{x_0 + x}
 $$
 
 where:
-- \( S(x) \) is the total number of tokens issued for a cumulative ETH contribution of \( x_0 + x \);
-- \( x \) is the additional ETH contributed beyond the base \( x_0 \).
+- \( T \) is the total "virtual" number of tokens available for issuance.
+- \( k \) is a scaling constant for ETH units.
+- \( x_0 \) is the virtual initial ETH deposit (e.g., 2 ETH).
+- \( x \) is the additional real ETH contributed.
 
-### Explanation
+This function means that as more ETH is contributed, the term \( \frac{k}{x_0 + x} \) decreases, and thus \( S(x) \) (the cumulative number of tokens issued) increases.
 
-- **Initial State (\( x = 0 \)):**  
-  $$
-  S(0) = T - \frac{k}{x_0}
-  $$
-  Even without any additional contribution, there is a base issuance determined by \( T \) and \( x_0 \).
+### Inverse Bonding Curve Function
 
-- **As \( x \) Increases:**  
-  The cumulative contribution \( x_0 + x \) increases, which decreases the term \( \frac{k}{x_0 + x} \) and, consequently, increases \( S(x) \). In other words, the token issuance grows as more ETH is contributed.
-
-## 2. Inverse Bonding Curve Function
-
-To determine the required additional ETH \( x \) for a desired token issuance \( S \), we start with the equation:
+To determine how much additional ETH \( x \) is needed to reach a desired token issuance \( S \), we invert the above function:
 
 $$
-S = T - \frac{k}{x_0 + x}
+x = \frac{k}{T - S} - x_0
 $$
 
-### Step-by-Step Solution
+This expression calculates the required ETH contribution to achieve a total issuance of \( S \).
 
-1. Rearrange the equation:
-   $$
-   \frac{k}{x_0 + x} = T - S
-   $$
-2. Solve for \( x_0 + x \):
-   $$
-   x_0 + x = \frac{k}{T - S}
-   $$
-3. Isolate \( x \):
-   $$
-   x = \frac{k}{T - S} - x_0
-   $$
+### Instantaneous Token Price
 
-**Interpretation:**  
-This formula calculates the additional ETH needed to achieve a total token issuance of \( S \).
+The instantaneous price per token is derived as the inverse of the derivative of \( S(x) \) with respect to \( x \):
 
-## 3. Instantaneous Token Price
-
-The instantaneous token price \( p(x) \) represents the cost in ETH for acquiring one additional token when \( x \) ETH has already been contributed. It is derived by differentiating the token issuance function.
-
-### Derivation
-
-Given:
-$$
-S(x) = T - \frac{k}{x_0 + x}
-$$
-
-Differentiate with respect to \( x \):
-$$
-\frac{dS}{dx} = \frac{k}{(x_0 + x)^2}
-$$
-
-The instantaneous price is the inverse of the derivative:
 $$
 p(x) = \left(\frac{dS}{dx}\right)^{-1} = \frac{(x_0 + x)^2}{k}
 $$
 
-**Explanation:**  
-This shows that the cost per token increases quadratically with the cumulative ETH contribution \( (x_0 + x) \). Hence, as more ETH is contributed, each additional token costs more.
+This means that the price increases quadratically with the total contributed ETH (\( x_0 + x \)).
+
+---
+
+## 2. Conventional Crypto Pricing (AMM Model)
+
+In traditional AMMs like Uniswap, pricing is based on the constant product formula:
+
+$$
+x \cdot y = k'
+$$
+
+where:
+- \( x \) and \( y \) are the reserves of the two tokens in the liquidity pool.
+- \( k' \) is a constant invariant.
+
+The price is determined by the ratio of the reserves:
+
+$$
+p = \frac{y}{x}
+$$
+
+In this model, each trade shifts the reserves \( x \) and \( y \), and the price dynamically adjusts to reflect current supply and demand.
+
+---
+
+## Key Differences
+
+### Deterministic vs. Market-Driven Pricing
+
+- **Bonding Curve:**  
+  The price is determined by a predetermined function:
+  $$
+  p(x) = \frac{(x_0 + x)^2}{k}
+  $$
+  It depends solely on the cumulative ETH contributed and follows a fixed, predictable formula.
+
+- **AMM:**  
+  The price is driven by market dynamics and is given by:
+  $$
+  p = \frac{y}{x}
+  $$
+  It changes as trades occur and the pool's reserves adjust.
+
+### Predictability
+
+- **Bonding Curve:**  
+  The pricing mechanism is fully deterministic. Every additional ETH increases the token supply and price in a known manner.
+
+- **AMM:**  
+  The price is subject to external market forces. Trades alter the reserve ratios, making the price less predictable and more reflective of real-time demand and supply.
+
+### Incentivization
+
+- **Bonding Curve:**  
+  The early phase offers lower prices (when \( x \) is small), incentivizing early investors. As more funds are contributed, the price increases according to the formula.
+
+- **AMM:**  
+  The pricing is set by current pool reserves without an inherent mechanism for early investor incentives. Price fluctuations depend on market activity rather than a preset formula.
+
+---
 
 ## Conclusion
 
-The bonding curve model in the smart contract is defined by three key relationships:
+In summary, the bonding curve model in our contract is defined by:
 
-1. **Token Issuance Function:**
-   $$
-   S(x) = T - \frac{k}{x_0 + x}
-   $$
-   Token issuance increases as additional ETH is contributed.
+- **Token Issuance Function:**
+  $$
+  S(x) = T - \frac{k}{x_0 + x}
+  $$
+- **Inverse Function:**
+  $$
+  x = \frac{k}{T - S} - x_0
+  $$
+- **Instantaneous Price:**
+  $$
+  p(x) = \frac{(x_0 + x)^2}{k}
+  $$
 
-2. **Inverse Function:**
-   $$
-   x = \frac{k}{T - S} - x_0
-   $$
-   This equation computes the required additional ETH for a specified token issuance \( S \).
+This deterministic model provides predictable, formula-based pricing that benefits early investors by starting at a lower price and gradually increasing as more ETH is added. In contrast, conventional AMM pricing is based on the dynamic ratio of token reserves (\( p = \frac{y}{x} \)), adjusting continuously with market trades.
 
-3. **Instantaneous Token Price:**
-   $$
-   p(x) = \frac{(x_0 + x)^2}{k}
-   $$
-   The price per token increases quadratically with the total ETH contributed.
-
+This README aims to clarify the fundamental differences between these two approaches to crypto pricing.
