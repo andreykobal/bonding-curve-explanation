@@ -34,13 +34,31 @@ This expression calculates the required ETH contribution to achieve a total issu
 
 ### Instantaneous Token Price
 
-The instantaneous price per token is derived as the inverse of the derivative of $S(x)$ with respect to $x$:
+The instantaneous token price reflects the marginal cost—the amount of ETH needed to mint one additional token—at the current state of the bonding curve.
+
+To derive it, we first compute the derivative of $S(x)$ with respect to $x$. Given:
 
 $$
-p(x) = \left(\frac{dS}{dx}\right)^{-1} = \frac{(x_0 + x)^2}{k}
+S(x) = T - \frac{k}{x_0 + x},
 $$
 
-This means that the price increases quadratically with the total contributed ETH ($x_0 + x$).
+the derivative is:
+
+$$
+\frac{dS}{dx} = \frac{k}{(x_0 + x)^2}.
+$$
+
+This derivative $\frac{dS}{dx}$ represents the number of new tokens minted per additional unit of ETH contributed. However, to determine the ETH cost for one additional token, we take the reciprocal of this value. Therefore, the instantaneous price per token is:
+
+$$
+p(x) = \left(\frac{dS}{dx}\right)^{-1} = \frac{(x_0 + x)^2}{k}.
+$$
+
+**Explanation:**
+
+- The derivative $\frac{dS}{dx} = \frac{k}{(x_0 + x)^2}$ tells us that at the current level of cumulative ETH contribution ($x_0 + x$), every additional ETH will mint $\frac{k}{(x_0 + x)^2}$ tokens.
+- By taking the reciprocal, $p(x)$ gives the amount of ETH required for minting one extra token.
+- Notice that the price increases quadratically with the total contributed ETH ($x_0 + x$). This quadratic relationship implies that as more funds are added, each additional token becomes significantly more expensive—a feature that rewards early participants with lower prices.
 
 ---
 
@@ -59,7 +77,7 @@ where:
 The price is determined by the ratio of the reserves:
 
 $$
-p = \frac{y}{x}
+p = \frac{y}{x}.
 $$
 
 In this model, each trade shifts the reserves $x$ and $y$, and the price dynamically adjusts to reflect current supply and demand.
@@ -71,28 +89,28 @@ In this model, each trade shifts the reserves $x$ and $y$, and the price dynamic
 ### Deterministic vs. Market-Driven Pricing
 
 **Bonding Curve:**  
-  The price is determined by a predetermined function:
-  
-  $$
-  p(x) = \frac{(x_0 + x)^2}{k}
-  $$
-  
-  It depends solely on the cumulative ETH contributed and follows a fixed, predictable formula.
+The price is determined by a predetermined function:
+
+$$
+p(x) = \frac{(x_0 + x)^2}{k}
+$$
+
+It depends solely on the cumulative ETH contributed and follows a fixed, predictable formula.
 
 **AMM:**  
-  The price is driven by market dynamics and is given by:
-  
-  $$
-  p = \frac{y}{x}
-  $$
-  
-  It changes as trades occur and the pool's reserves adjust.
+The price is driven by market dynamics and is given by:
+
+$$
+p = \frac{y}{x}.
+$$
+
+It changes as trades occur and the pool's reserves adjust.
 
 ### Predictability
 
 - **Bonding Curve:**  
   The pricing mechanism is fully deterministic. Every additional ETH increases the token supply and price in a known manner.
-
+  
 - **AMM:**  
   The price is subject to external market forces. Trades alter the reserve ratios, making the price less predictable and more reflective of real-time demand and supply.
 
@@ -100,7 +118,7 @@ In this model, each trade shifts the reserves $x$ and $y$, and the price dynamic
 
 - **Bonding Curve:**  
   The early phase offers lower prices (when $x$ is small), incentivizing early investors. As more funds are contributed, the price increases according to the formula.
-
+  
 - **AMM:**  
   The pricing is set by current pool reserves without an inherent mechanism for early investor incentives. Price fluctuations depend on market activity rather than a preset formula.
 
@@ -111,22 +129,22 @@ In this model, each trade shifts the reserves $x$ and $y$, and the price dynamic
 In summary, the bonding curve model in our contract is defined by:
 
 **Token Issuance Function:**
-  
-  $$
-  S(x) = T - \frac{k}{x_0 + x}
-  $$
+
+$$
+S(x) = T - \frac{k}{x_0 + x}
+$$
 
 **Inverse Function:**
-  
-  $$
-  x = \frac{k}{T - S} - x_0
-  $$
+
+$$
+x = \frac{k}{T - S} - x_0
+$$
 
 **Instantaneous Price:**
-  
-  $$
-  p(x) = \frac{(x_0 + x)^2}{k}
-  $$
+
+$$
+p(x) = \frac{(x_0 + x)^2}{k}
+$$
 
 This deterministic model provides predictable, formula-based pricing that benefits early investors by starting at a lower price and gradually increasing as more ETH is added. In contrast, conventional AMM pricing is based on the dynamic ratio of token reserves ($p = \frac{y}{x}$), adjusting continuously with market trades.
 
