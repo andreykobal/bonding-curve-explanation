@@ -70,7 +70,7 @@ In this model, each trade shifts the reserves $x$ and $y$, and the price dynamic
 
 ### Deterministic vs. Market-Driven Pricing
 
-- **Bonding Curve:**  
+**Bonding Curve:**  
   The price is determined by a predetermined function:
   
   $$
@@ -79,7 +79,7 @@ In this model, each trade shifts the reserves $x$ and $y$, and the price dynamic
   
   It depends solely on the cumulative ETH contributed and follows a fixed, predictable formula.
 
-- **AMM:**  
+**AMM:**  
   The price is driven by market dynamics and is given by:
   
   $$
@@ -110,19 +110,19 @@ In this model, each trade shifts the reserves $x$ and $y$, and the price dynamic
 
 In summary, the bonding curve model in our contract is defined by:
 
-- **Token Issuance Function:**
+**Token Issuance Function:**
   
   $$
   S(x) = T - \frac{k}{x_0 + x}
   $$
 
-- **Inverse Function:**
+**Inverse Function:**
   
   $$
   x = \frac{k}{T - S} - x_0
   $$
 
-- **Instantaneous Price:**
+**Instantaneous Price:**
   
   $$
   p(x) = \frac{(x_0 + x)^2}{k}
